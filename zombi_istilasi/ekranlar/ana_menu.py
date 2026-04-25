@@ -15,6 +15,13 @@ class AnaMenu:
         self.font_alt     = pygame.font.SysFont("Consolas", 22)
         self.font_buton   = pygame.font.SysFont("Consolas", 30, bold=True)
         self.zaman = 0.0
+        self.loglar = [
+            "Son iletişim: 14:32 — Bölge 7 karantinaya alındı",
+            "ARGUS İç Hat: EDEN stabil değil",
+            "Saha Raporu: Nüfusun %70'i Dönmüş",
+            "Dr. Kerem Aydın: antidotun yarısı elimde",
+            "Direktör Selim Koç yayını ele geçirdi",
+        ]
 
         self.butonlar = [
             {"metin": "OYNA",    "durum": DURUM_OYUN,  "renk": YESIL},
@@ -32,6 +39,7 @@ class AnaMenu:
         self._ciz_arkaplan_detay(ekran)
         self._ciz_baslik(ekran)
         self._ciz_butonlar(ekran)
+        self._ciz_lore_loglari(ekran)
         self._ciz_alt_bilgi(ekran)
 
     # ----------------------------------------------------------
@@ -91,6 +99,12 @@ class AnaMenu:
                                 yby + ybh // 2 - metin.get_height() // 2))
 
     # ----------------------------------------------------------
+    def _ciz_lore_loglari(self, ekran):
+        for i, log in enumerate(self.loglar):
+            x = int(GENISLIK - ((self.zaman * 85 + i * 280) % (GENISLIK + 900)))
+            satir = self.font_alt.render(log, True, (110, 170, 130))
+            ekran.blit(satir, (x, YUKSEKLIK - 140 + i * 22))
+
     def _ciz_alt_bilgi(self, ekran):
         ipucu = self.font_alt.render("WASD: Hareket  |  Fare: Nişan  |  Sol Tık: Ateş  |  ESC: Duraklat", True, (100, 140, 100))
         ekran.blit(ipucu, (GENISLIK // 2 - ipucu.get_width() // 2, YUKSEKLIK - 50))
