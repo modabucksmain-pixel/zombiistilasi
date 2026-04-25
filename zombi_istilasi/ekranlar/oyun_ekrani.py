@@ -222,14 +222,15 @@ class OyunEkrani:
                 self.oyuncu.zombi_temas(dt, 5)
 
         for z in list(self.zombiler):
-            z.update(dt, self.oyuncu.x, self.oyuncu.y, self._hareket_cozucu)
+            yakin_ayni = sum(1 for d in self.zombiler if d is not z and d.tip == z.tip and math.hypot(d.x - z.x, d.y - z.y) <= 80)
+            z.update(dt, self.oyuncu.x, self.oyuncu.y, self._hareket_cozucu, yakin_ayni)
             if z.tip == "zehirli" and z.zehir_sayac >= 0.3:
                 z.zehir_sayac = 0.0
                 self.zehir_havuzlari.append([z.x, z.y, 16, 2.5, 2.5])
                 
-            if z.oyuncuya_yakin_mi(self.oyuncu.x, self.oyuncu.y):
-                if z.tip == "patlayan":
-                    self.patlamalar.append(Patlama(z.x, z.y, 120))
+            if z.tip == "patlayan" and getattr(z, "patlamaya_hazir", False):
+                self.patlamalar.append(Patlama(z.x, z.y, 120))
+                if math.hypot(self.oyuncu.x - z.x, self.oyuncu.y - z.y) < 120 + self.oyuncu.yari_cap:
                     self.oyuncu.hasar_al(35)
                     z.kill()
                     self.oldurulen_zombi += 1
@@ -302,6 +303,21 @@ class OyunEkrani:
                     self.oyuncu.aktif_mermi_doldur()
                     self.sayilar.append(HarasarSayisi(self.oyuncu.x, self.oyuncu.y, "+Mermi!", SARI, True))
                 d.kill()
+
+        for dm in self.dusman_mermileri[:]:
+            dm["omur"] -= dt
+            dm["x"] += dm["vx"] * dt
+            dm["y"] += dm["vy"] * dt
+            if dm["omur"] <= 0:
+                self.dusman_mermileri.remove(dm)
+                continue
+            if math.hypot(dm["x"] - self.oyuncu.x, dm["y"] - self.oyuncu.y) <= self.oyuncu.yari_cap + dm["r"]:
+                self.oyuncu.hasar_al(dm["hasar"])
+                self.dusman_mermileri.remove(dm)
+                self._kerem_mesaj_tetikle("hasar")
+                if self.oyuncu.oldu:
+                    self._bitis()
+                    return
 
         self.parcaciklar = [p for p in self.parcaciklar if p.update(dt)]
         self.sayilar = [s for s in self.sayilar if s.update(dt)]
@@ -488,6 +504,8 @@ class OyunEkrani:
             self.oyuncu.ciz_nisangah(ekran, self.son_fare_pos, ox, oy)
 
         for m in self.mermiler: ekran.blit(m.image, (m.rect.x + ox, m.rect.y + oy))
+        for dm in self.dusman_mermileri:
+            pygame.draw.circle(ekran, PEMBE, (int(dm["x"] + ox), int(dm["y"] + oy)), dm["r"])
         for p in self.patlamalar: p.ciz(ekran)
         for p in self.parcaciklar: p.ciz(ekran)
 
