@@ -219,10 +219,10 @@ DURUM_SHOP      = "shop"
 DURUM_BITTI     = "bitti"
 DURUM_GUNLUK    = "gunluk"
 DURUM_OZET      = "ozet"
+DURUM_META      = "meta"
 DURUM_AYARLAR   = "ayarlar"
 DURUM_BASARIM   = "basarim"
 DURUM_YETENEK   = "yetenek"
 PROJE_DIZIN      = os.path.dirname(os.path.abspath(__file__))
 KAYIT_DOSYASI    = os.path.join(PROJE_DIZIN, "kayitlar", "highscore.json")
 os.makedirs(os.path.dirname(KAYIT_DOSYASI), exist_ok=True)
-

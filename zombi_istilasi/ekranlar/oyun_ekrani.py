@@ -106,6 +106,7 @@ class OyunEkrani:
         self.basarim_bildirim_veri: dict | None = None
         self._hasarsiz_dalga_sayisi = 0
         self._dalga_hasar_alindi = False
+        self._son_dalga_seviyesi = 0
 
         # ── Büyük dünya: spawn noktası Merkez Meydan ──
         self.dunya = DunyaHaritasi()
@@ -248,6 +249,7 @@ class OyunEkrani:
         can_oran = self.oyuncu.can / self.oyuncu.max_can
         if can_oran < 0.35:
             self.juice.vignette_ayarla(int(180 * (1.0 - can_oran / 0.35)), (150, 0, 0))
+        onceki_x, onceki_y = self.oyuncu.x, self.oyuncu.y
         self.oyuncu.update(
             dt,
             tuslar,
@@ -260,6 +262,7 @@ class OyunEkrani:
         )
         self.mermiler.update(dt, DUNYA_W, DUNYA_H)
         self.puan_sis.update(dt)
+        anlik_mesafe = math.hypot(self.oyuncu.x - onceki_x, self.oyuncu.y - onceki_y)
 
         for zh in self.zehir_havuzlari[:]:
             zh[3] -= dt
@@ -540,7 +543,17 @@ class OyunEkrani:
         self.basarim_sis.istatistik_ayarla("para", self.puan_sis.para)
         self.basarim_sis.istatistik_ayarla("max_kombo", self.puan_sis.combo)
         self.basarim_sis.istatistik_ayarla("oldurulen", self.oldurulen_zombi)
+        self.basarim_sis.istatistik_ayarla("toplam_bolge_sayisi", len(self.dunya.bolgeler))
+        self.basarim_sis.istatistik_ayarla("kesfedilen_bolge_sayisi", len(self.gecilen_bolgeler))
+        if tuslar.get("sprint", False) and anlik_mesafe > 0:
+            self.basarim_sis.istatistik_guncelle("sprint_mesafe", int(anlik_mesafe))
         self.dalga_sure_sayac += dt
+        if bolge_tehlike > self._son_dalga_seviyesi and self._son_dalga_seviyesi > 0:
+            tamamlanan_dalga_sure = int(self.dalga_sure_sayac)
+            self.basarim_sis.istatistik_ayarla("en_hizli_dalga_suresi", tamamlanan_dalga_sure)
+            self.dalga_sure_sayac = 0.0
+        self._son_dalga_seviyesi = max(self._son_dalga_seviyesi, bolge_tehlike)
+        self.basarim_sis.kontrol_et()
 
         # ── Kamera güncelleme (her frame sonunda) ──
         is_sprinting = tuslar.get("sprint", False)

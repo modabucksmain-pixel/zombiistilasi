@@ -10,6 +10,7 @@ from ayarlar import (
     DURUM_BITTI,
     DURUM_GUNLUK,
     DURUM_MENU,
+    DURUM_META,
     DURUM_OYUN,
     DURUM_OZET,
     DURUM_PAUSE,
@@ -56,9 +57,8 @@ def main():
     ozet = OzetEkrani()
 
     from ekranlar.meta_ekran import MetaEkran
-    from ayarlar import DURUM_MENU
-    DURUM_META = "meta"
     meta_ekran = MetaEkran()
+    meta_donus = DURUM_MENU
 
     durum = DURUM_MENU
     _fare_durumu_ayarla(aktif_oyun=False)
@@ -88,6 +88,10 @@ def main():
                 if sonuc == DURUM_OYUN:
                     oyun_ekrani.baslat()
                     durum = DURUM_OYUN
+                elif sonuc == DURUM_META:
+                    meta_ekran.baslat()
+                    meta_donus = DURUM_MENU
+                    durum = DURUM_META
                 elif sonuc == "cikis":
                     pygame.quit()
                     sys.exit()
@@ -128,6 +132,10 @@ def main():
                     elif sonuc == "gunluk":
                         gunluk.ayarla(oyun_ekrani.acilan_kayitlar)
                         durum = DURUM_GUNLUK
+                    elif sonuc == "meta":
+                        meta_ekran.baslat()
+                        meta_donus = DURUM_PAUSE
+                        durum = DURUM_META
                     elif sonuc == "menu":
                         durum = DURUM_MENU
                     elif sonuc == "cikis":
@@ -163,6 +171,10 @@ def main():
             elif durum == DURUM_OZET:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     durum = DURUM_BITTI
+            elif durum == DURUM_META:
+                sonuc = meta_ekran.tik_isle(event, GENISLIK, YUKSEKLIK)
+                if sonuc == "devam":
+                    durum = meta_donus
 
         if durum == DURUM_MENU:
             ana_menu.guncelle(dt)
@@ -202,6 +214,8 @@ def main():
             oyun_bitti.guncelle(dt)
         elif durum == DURUM_OZET:
             ozet.guncelle(dt)
+        elif durum == DURUM_META:
+            meta_ekran.guncelle(dt)
 
         if durum == DURUM_MENU:
             ana_menu.ciz(ekran)
@@ -223,6 +237,8 @@ def main():
             ozet.ciz(ekran)
         elif durum == DURUM_BITTI:
             oyun_bitti.ciz(ekran)
+        elif durum == DURUM_META:
+            meta_ekran.ciz(ekran, GENISLIK, YUKSEKLIK)
 
         pygame.display.flip()
 
