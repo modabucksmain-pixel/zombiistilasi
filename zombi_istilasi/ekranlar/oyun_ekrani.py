@@ -16,6 +16,7 @@ from varliklar.parcacik import kan_parcaciklari, HarasarSayisi, BasarimBildirimi
 from sistemler.dalga_sistemi import DalgaSistemi
 from sistemler.puan_sistemi  import PuanSistemi
 from sistemler.raycaster     import Raycaster
+from sistemler.harita_sistemi import HaritaSistemi
 
 class OyunEkrani:
     def __init__(self):
@@ -33,11 +34,7 @@ class OyunEkrani:
             c = random.choice([(30, 35, 40), (20, 25, 30), (45, 25, 25)]) # Kırmızımsı lekeler ve gri taşlar
             self._zemin.append((random.randint(-200, GENISLIK + 200), random.randint(-200, YUKSEKLIK + 200), r, c))
 
-        self.haritalar = [
-            {"isim": "Sehir Asfalti", "zemin": (10, 12, 16), "cizgi": (22, 28, 36), "karo": 80},
-            {"isim": "Laboratuvar", "zemin": (14, 22, 20), "cizgi": (45, 70, 65), "karo": 70},
-        ]
-        self.aktif_harita = 0
+        self.harita_sis = HaritaSistemi()
         
         self.is_3d = False # Direkt 3D başlasın
         self.raycaster = Raycaster(pygame.display.get_surface())
@@ -53,9 +50,12 @@ class OyunEkrani:
         self.basarimlar  = []
         self.zehir_havuzlari = []
         
-        self.oyuncu      = Oyuncu(GENISLIK // 2, YUKSEKLIK // 2)
+        bas_x, bas_y = self.harita_sis.rastgele_guvenli_nokta(32)
+        self.oyuncu      = Oyuncu(bas_x, bas_y)
         self.dalga_sis   = DalgaSistemi(self.zombiler)
         self.puan_sis    = PuanSistemi()
+        self.hikaye_bildirimi = ""
+        self.hikaye_bildirim_sayaci = 0.0
         
         self.sarsinti    = 0.0
         self.bitti       = False
@@ -84,7 +84,11 @@ class OyunEkrani:
 
     def harita_degistir(self):
         """2D mod için farklı arena temasına geç."""
-        self.aktif_harita = (self.aktif_harita + 1) % len(self.haritalar)
+        self.harita_sis.harita_degistir()
+        self._sifirla()
+
+    def _hareket_cozucu(self, eski_x, eski_y, yeni_x, yeni_y, yaricap):
+        return self.harita_sis.hareketi_sinirla(eski_x, eski_y, yeni_x, yeni_y, yaricap)
 
     def guncelle(self, dt, tuslar, fare_pos):
         if self.bitti: return
@@ -101,7 +105,16 @@ class OyunEkrani:
             fare_pos = (GENISLIK // 2, YUKSEKLIK // 2)
 
         self.son_fare_pos = fare_pos
-        self.oyuncu.update(dt, tuslar, fare_pos, self.mermiler, GENISLIK, YUKSEKLIK, self.is_3d)
+        self.oyuncu.update(
+            dt,
+            tuslar,
+            fare_pos,
+            self.mermiler,
+            GENISLIK,
+            YUKSEKLIK,
+            self.is_3d,
+            self._hareket_cozucu,
+        )
         self.mermiler.update(dt, GENISLIK, YUKSEKLIK)
         self.puan_sis.update(dt)
 
@@ -113,7 +126,7 @@ class OyunEkrani:
                 self.oyuncu.zombi_temas(dt, 5)
 
         for z in list(self.zombiler):
-            z.update(dt, self.oyuncu.x, self.oyuncu.y)
+            z.update(dt, self.oyuncu.x, self.oyuncu.y, self._hareket_cozucu)
             if z.tip == "zehirli" and z.zehir_sayac >= 0.3:
                 z.zehir_sayac = 0.0
                 self.zehir_havuzlari.append([z.x, z.y, 16, 2.5, 2.5])
@@ -198,6 +211,13 @@ class OyunEkrani:
             self.sayilar.append(HarasarSayisi(self.oyuncu.x, self.oyuncu.y, "Yoruldum!", KIRMIZI))
 
         if self.sarsinti > 0: self.sarsinti -= dt
+        if self.hikaye_bildirim_sayaci > 0:
+            self.hikaye_bildirim_sayaci -= dt
+        mesaj = self.harita_sis.hikaye_guncelle(self.oyuncu, self.dalga_sis.dalga_no)
+        if mesaj:
+            self.hikaye_bildirimi = mesaj
+            self.hikaye_bildirim_sayaci = 3.0
+            self.puan_sis.para += 120
         self.dalga_sis.guncelle(dt, GENISLIK, YUKSEKLIK)
 
     def _zombi_oldu(self, z):
@@ -222,7 +242,13 @@ class OyunEkrani:
 
     def ciz(self, ekran):
         if self.is_3d:
-            self.raycaster.ciz(self.oyuncu, self.zombiler, self.mermiler, self.droplar)
+            self.raycaster.ciz(
+                self.oyuncu,
+                self.zombiler,
+                self.mermiler,
+                self.droplar,
+                self.harita_sis.aktif_harita,
+            )
             self._ciz_hud(ekran)
             self._ciz_bildirim(ekran)
             self._ciz_silah_bar(ekran)
@@ -231,7 +257,7 @@ class OyunEkrani:
         ox = random.randint(-4, 4) if self.sarsinti > 0 else 0
         oy = random.randint(-4, 4) if self.sarsinti > 0 else 0
 
-        aktif_harita = self.haritalar[self.aktif_harita]
+        aktif_harita = self.harita_sis.aktif_harita
         ekran.fill(aktif_harita["zemin"])
         
         # Izgara çizgileri (Fayans Derzleri)
@@ -243,6 +269,18 @@ class OyunEkrani:
             
         for (px, py, pr, pcolor) in self._zemin:
             pygame.draw.circle(ekran, pcolor, (px + ox, py + oy), pr)
+        for r in aktif_harita.get("engeller", []):
+            rr = pygame.Rect(r.x + ox, r.y + oy, r.width, r.height)
+            pygame.draw.rect(ekran, (35, 38, 48), rr, border_radius=8)
+            pygame.draw.rect(ekran, (82, 88, 106), rr, 3, border_radius=8)
+        for lx, ly, renk in aktif_harita.get("isiklar", []):
+            halo = pygame.Surface((180, 180), pygame.SRCALPHA)
+            pygame.draw.circle(halo, (*renk, 70), (90, 90), 80)
+            ekran.blit(halo, (lx - 90 + ox, ly - 90 + oy))
+        for lx, ly, isim, renk in aktif_harita.get("landmarks", []):
+            pygame.draw.circle(ekran, renk, (int(lx + ox), int(ly + oy)), 8)
+            lbl = self.font_kucuk.render(isim, True, renk)
+            ekran.blit(lbl, (lx + 12 + ox, ly - 8 + oy))
             
         for zh in self.zehir_havuzlari:
             alpha = int(90 * (zh[3] / zh[4]))
@@ -357,6 +395,17 @@ class OyunEkrani:
             cy = 80
             ct = self.font_buyuk.render(f"{self.puan_sis.combo}x COMBO!", True, TURUNCU)
             ekran.blit(ct, (cx - ct.get_width() // 2, cy))
+
+        # Hikaye paneli
+        pygame.draw.rect(ekran, (10, 10, 16, 220), (20, YUKSEKLIK - 200, 470, 130), border_radius=12)
+        pygame.draw.rect(ekran, (50, 70, 90), (20, YUKSEKLIK - 200, 470, 130), 2, border_radius=12)
+        baslik = self.font_hud.render(self.harita_sis.aktif_hikaye_baslik, True, CAMGOBEGI)
+        gorev = self.font_kucuk.render(f"Görev: {self.harita_sis.aktif_gorev}", True, BEYAZ)
+        ekran.blit(baslik, (32, YUKSEKLIK - 188))
+        ekran.blit(gorev, (32, YUKSEKLIK - 156))
+        if self.hikaye_bildirim_sayaci > 0 and self.hikaye_bildirimi:
+            bil = self.font_kucuk.render(self.hikaye_bildirimi, True, ALTIN)
+            ekran.blit(bil, (32, YUKSEKLIK - 126))
 
     def _ciz_silah_bar(self, ekran):
         bar_yuk = 80

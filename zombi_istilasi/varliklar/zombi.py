@@ -98,7 +98,7 @@ class Zombi(pygame.sprite.Sprite):
             self.sok_sayac -= dt
             self.hiz = 0.0
 
-    def update(self, dt, ox, oy):
+    def update(self, dt, ox, oy, hareket_cozucu=None):
         self.durum_guncelle(dt)
         
         if self.hiz > 0:
@@ -108,8 +108,12 @@ class Zombi(pygame.sprite.Sprite):
             if uzak > 0:
                 self.vx = (dx / uzak) * self.hiz
                 self.vy = (dy / uzak) * self.hiz
-            self.x += self.vx * dt
-            self.y += self.vy * dt
+            yeni_x = self.x + self.vx * dt
+            yeni_y = self.y + self.vy * dt
+            if hareket_cozucu:
+                yeni_x, yeni_y = hareket_cozucu(self.x, self.y, yeni_x, yeni_y, self.yari_cap)
+            self.x = yeni_x
+            self.y = yeni_y
             
         self.rect.center = (int(self.x), int(self.y))
         
