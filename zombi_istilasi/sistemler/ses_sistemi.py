@@ -11,13 +11,15 @@ print("Ses Sistemi v3.0 Yükleniyor... (Gerçekçi Silah Sesleri Aktif)")
 
 class SesSistemi:
     def __init__(self):
+        self.sesler = {}
+        self.baslatildi = False
         try:
             pygame.mixer.init(frequency=44100, size=-16, channels=1)
             self.dizin = os.path.join("assets", "sounds")
             if not os.path.exists(self.dizin):
                 os.makedirs(self.dizin)
-            self.sesler = {}
             self._yukle()
+            self.baslatildi = True
         except Exception as e:
             print(f"Ses sistemi hatası: {e}")
 
@@ -82,14 +84,18 @@ class SesSistemi:
         for t in tipler:
             yol = os.path.join(self.dizin, f"{t}.wav")
             if os.path.exists(yol):
-                try: self.sesler[t] = pygame.mixer.Sound(yol)
-                except: pass
+                try:
+                    self.sesler[t] = pygame.mixer.Sound(yol)
+                except Exception as e:
+                    print(f"Ses yükleme hatası (anahtar={t}, yol={yol}): {e}")
             
             # Dosya yoksa üret
             if t not in self.sesler:
                 self.sesler[t] = self._prosedurel_wav_uret(t)
 
     def oynat(self, isim):
+        if not self.baslatildi:
+            return
         if isim in self.sesler:
             self.sesler[isim].play()
 
