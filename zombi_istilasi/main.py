@@ -55,6 +55,11 @@ def main():
     gunluk = GunlukEkrani()
     ozet = OzetEkrani()
 
+    from ekranlar.meta_ekran import MetaEkran
+    from ayarlar import DURUM_MENU
+    DURUM_META = "meta"
+    meta_ekran = MetaEkran()
+
     durum = DURUM_MENU
     _fare_durumu_ayarla(aktif_oyun=False)
 
@@ -187,6 +192,7 @@ def main():
                 ozet.ayarla(oyun_ekrani.dalga_no, oyun_ekrani.oldurulen_zombi_sayisi, oyun_ekrani.gecilen_bolge_listesi, True)
                 durum = DURUM_OZET
             elif oyun_ekrani.dalga_bitti_mi:
+                oyun_ekrani.dalga_bitti_isle()  # Görev ödülleri + kristal
                 durum = DURUM_SHOP
                 _fare_durumu_ayarla(aktif_oyun=False)
 

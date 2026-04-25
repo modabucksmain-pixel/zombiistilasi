@@ -38,9 +38,6 @@ class DalgaSistemi:
         kosucu = max(0, dalga_no - 3) * 2
         patlayan = max(0, dalga_no - 4)
         zehirli = max(0, dalga_no - 6)
-        zirhli = max(0, dalga_no - 4)
-        kopek = max(0, dalga_no - 2)
-        sniper = max(0, dalga_no - 5)
 
         if self.hikaye_secim == "antidot":
             zehirli += max(1, dalga_no // 2)
@@ -52,9 +49,6 @@ class DalgaSistemi:
         liste += ["kosucu"] * kosucu
         liste += ["patlayan"] * patlayan
         liste += ["zehirli"] * zehirli
-        liste += ["zirhli"] * zirhli
-        liste += ["kopek"] * kopek
-        liste += ["sniper_zombi"] * sniper
 
         if dalga_no % 5 == 0:
             boss_sayisi = dalga_no // 5
