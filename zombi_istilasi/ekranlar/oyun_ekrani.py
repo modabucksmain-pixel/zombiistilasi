@@ -18,6 +18,10 @@ from sistemler.puan_sistemi  import PuanSistemi
 from sistemler.raycaster     import Raycaster
 from sistemler.harita_sistemi import HaritaSistemi
 from sistemler.cutscene import BossGirisBildirim, CutscenePlayer, chapter_from_wave, iter_loading_notes
+from sistemler.juice import JuceSistemi, HitMarker, DalgaGirisAnimasyonu
+from sistemler.gorev_sistemi import GorevSistemi
+from sistemler.meta_progression import meta_sis
+from varliklar.boss import Boss, BossGirisAnimasyonu
 
 class OyunEkrani:
     def __init__(self):
@@ -68,9 +72,16 @@ class OyunEkrani:
         self.basarimlar  = []
         self.zehir_havuzlari = []
         self.dusman_mermileri = []
+        self.hit_markerlar = []
+        self.bosslar = pygame.sprite.Group()
+        self.boss_giris_animasyonu = None
+        self.juice = JuceSistemi(GENISLIK, YUKSEKLIK)
+        self.gorev_sis = GorevSistemi()
+        self.dalga_giris_anim = None
         
         bas_x, bas_y = self.harita_sis.rastgele_guvenli_nokta(32)
         self.oyuncu      = Oyuncu(bas_x, bas_y)
+        meta_sis.oyuncu_bonuslarini_uygula(self.oyuncu)
         self.dalga_sis   = DalgaSistemi(self.zombiler)
         self.puan_sis    = PuanSistemi()
         self.hikaye_bildirimi = ""
@@ -83,6 +94,7 @@ class OyunEkrani:
         self.sarsinti    = 0.0
         self.bitti       = False
         self.son_fare_pos = (0, 0)
+        self._son_hasar_alindi = False
 
     def baslat(self):
         self._sifirla()
@@ -172,6 +184,25 @@ class OyunEkrani:
             fare_pos = (GENISLIK // 2, YUKSEKLIK // 2)
 
         self.son_fare_pos = fare_pos
+        # YENİ: Juice ve görev güncelleme
+        juice_dt = self.juice.oyun_dt(dt)
+        self.juice.guncelle(dt)
+        self.gorev_sis.guncelle(dt, self._son_hasar_alindi)
+        self._son_hasar_alindi = False
+        # Boss giriş animasyonu
+        if self.boss_giris_animasyonu and self.boss_giris_animasyonu.aktif:
+            self.boss_giris_animasyonu.guncelle(dt)
+        # Dalga giriş animasyonu
+        if self.dalga_giris_anim and self.dalga_giris_anim.aktif:
+            self.dalga_giris_anim.guncelle(dt)
+        # Hit markerlar
+        self.hit_markerlar = [h for h in self.hit_markerlar if h.update(dt)]
+        # Görev combo güncelle
+        self.gorev_sis.olay_isle("kombo", self.puan_sis.combo)
+        # Juice vignette: düşük can
+        can_oran = self.oyuncu.can / self.oyuncu.max_can
+        if can_oran < 0.35:
+            self.juice.vignette_ayarla(int(180 * (1.0 - can_oran / 0.35)), (150, 0, 0))
         self.oyuncu.update(
             dt,
             tuslar,
@@ -220,6 +251,19 @@ class OyunEkrani:
                 if random.random() < 0.12:
                     self._kerem_mesaj_tetikle("hasar")
 
+                    z.kill()
+                    self.oldurulen_zombi += 1
+                    self.sarsinti = 0.3
+                    self.juice.patlama_efekti(1.0)
+                else:
+                    onceki_can = self.oyuncu.can
+                    self.oyuncu.zombi_temas(dt, z.hasar)
+                    if random.random() < 0.12:
+                        self._kerem_mesaj_tetikle("hasar")
+                    if self.oyuncu.can < onceki_can:
+                        self.juice.hasar_alindi_efekti()
+                        self._son_hasar_alindi = True
+                    
                 if self.oyuncu.oldu:
                     self._bitis()
                     return
@@ -395,6 +439,21 @@ class OyunEkrani:
         self.sarsinti = 0.12 if z.tip != "boss" else 0.35
         drop = z.drop_olustur()
         if drop: self.droplar.add(drop)
+        # Juice efektleri
+        self.juice.hit_freeze(0.035, 0.65)
+        self.hit_markerlar.append(HitMarker(z.x, z.y - 20))
+        # Patlayan zombi için ekstra juice
+        if z.tip == "patlayan":
+            self.juice.patlama_efekti(0.8)
+        # Görev olayları
+        self.gorev_sis.olay_isle("oldurme")
+        aktif_veri = self.oyuncu.silah_verisi
+        if aktif_veri.get("efekt", "yok") != "yok":
+            self.gorev_sis.olay_isle("element_oldurme", aktif_veri["efekt"])
+        self.gorev_sis.silah_kullanildi(self.oyuncu.aktif_silah, True)
+        # Meta vampir
+        if hasattr(self.oyuncu, "_meta_vampir") and self.oyuncu._meta_vampir > 0:
+            self.oyuncu.can_doldur(self.oyuncu._meta_vampir)
         z.kill()
         self.oldurulen_zombi += 1
 
@@ -495,6 +554,19 @@ class OyunEkrani:
         self.oyuncu.flash_ciz(ekran)
         
         for b in self.basarimlar: b.ciz(ekran, self.font_kucuk, self.font_hud, GENISLIK, YUKSEKLIK)
+        # YENİ: Hit markerlar
+        for h in self.hit_markerlar:
+            h.ciz(ekran)
+        # YENİ: Görev paneli
+        self.gorev_sis.ciz(ekran, self.font_kucuk, self.font_hud, GENISLIK, YUKSEKLIK)
+        # YENİ: Juice efektleri (en üstte)
+        self.juice.ciz(ekran)
+        # YENİ: Dalga giriş animasyonu
+        if self.dalga_giris_anim and self.dalga_giris_anim.aktif:
+            self.dalga_giris_anim.ciz(ekran, self.font_buyuk, self.font_kucuk, GENISLIK, YUKSEKLIK)
+        # YENİ: Boss giriş animasyonu
+        if self.boss_giris_animasyonu and self.boss_giris_animasyonu.aktif:
+            self.boss_giris_animasyonu.ciz(ekran, self.font_buyuk, self.font_kucuk, GENISLIK, YUKSEKLIK)
 
     def _ciz_hud(self, ekran):
         pygame.draw.rect(ekran, (10, 10, 15, 200), (20, 20, 300, 140), border_radius=12)
@@ -712,6 +784,16 @@ class OyunEkrani:
         surf = self.font_buyuk.render(metin, True, (255, 100, 100) if "BOSS" in metin else SARI)
         surf.set_alpha(alpha)
         ekran.blit(surf, (GENISLIK // 2 - surf.get_width() // 2, YUKSEKLIK // 2 - 120))
+
+    def dalga_bitti_isle(self):
+        """main.py shop'a geçmeden önce çağırır. Görev ödüllerini verir."""
+        self.gorev_sis.dalga_bitti()
+        para, kristal = self.gorev_sis.toplam_odulleri_topla()
+        if para > 0:
+            self.puan_sis.para += para
+        if kristal > 0:
+            meta_sis.kristal_ekle(kristal)
+        self.gorev_sis.yeni_dalga_gorevi_ver(self.dalga_sis.dalga_no + 1)
 
     @property
     def oyuncu_oldu_mu(self): return self.bitti
