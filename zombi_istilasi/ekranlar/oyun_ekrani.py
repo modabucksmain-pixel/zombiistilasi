@@ -59,9 +59,6 @@ class OyunEkrani:
         self.cutscene = CutscenePlayer()
         self.boss_giris = BossGirisBildirim()
         self.yukleme_notlari = iter_loading_notes()
-        self.kerem_replikler = self._replikleri_hazirla()
-        self.kerem_mesaj = ""
-        self.kerem_mesaj_sure = 0.0
         self.radyo_mesajlari = self._radyo_hazirla()
         self.radyo_index = 0
         self.radyo_sure = 0.0
@@ -72,7 +69,6 @@ class OyunEkrani:
         self.terminal_sure = 0.0
         self.npc_satirlari: list[str] = []
         self.npc_sure = 0.0
-        self.oyuncu_portre_durum = "normal"
         self._sifirla()
 
     def _sifirla(self):
@@ -163,26 +159,7 @@ class OyunEkrani:
     def _boss_uyandi(self, boss, bolge_key):
         """SurekliSpawnSistemi boss uyandığında çağırır."""
         self.boss_giris_animasyonu = BossGirisAnimasyonu(boss.isim)
-        self._kerem_mesaj_tetikle("boss")
         self.sarsinti = 0.5
-
-    def _replikleri_hazirla(self):
-        return {
-            "combo": [f"Durdurulamam! ({i})" for i in range(1, 21)],
-            "hasar": [
-                "Ah!", "Dikkat Kerem!", "Bu canımı yaktı.", "Bunu hissettim.", "Dönmüşler çok yakın!",
-                "Geri çekil.", "Kalkanım eriyor.", "Nefes al, odaklan.", "Ayağa kalk.", "Henüz bitmedi.",
-                "Kan kaybediyorum.", "Dozu tutturmalıyım.", "Siper al.", "Tansiyon düşüyor.", "Daha hızlı ol.",
-                "Bu saldırı planlı.", "Acı... iyiye işaret değil.", "Uyanık kal.", "Şimdi olmaz.", "Devam et.",
-            ],
-            "boss": [
-                "O... o nedir?", "Selim bunu da mı hazırladı?", "Bu yaratık laboratuvardan kaçmış olmalı.",
-                "Bunu tek başıma indireceğim.", "ARGUS'un son kartı bu mu?", "Gözünü üstümden ayırmıyor.",
-                "Nabzım 140... sakin ol.", "Burası mezarım olmayacak.", "Sıfır noktasına giden yol bu.", "Hadi gel!",
-                "Kerem, kontrol sende.", "Tetikte kal.", "Antidot için buna değer.", "Bu iş burada bitecek.", "Ya o ya ben.",
-                "Nefesini dinle.", "Zayıf noktası olmalı.", "Dönmüşlerden farklı hareket ediyor.", "Geri adım yok.", "İnsanlık için.",
-            ],
-        }
 
     def _radyo_hazirla(self):
         return [
@@ -197,12 +174,6 @@ class OyunEkrani:
             "📻 Radyo: Dr. Kerem için acil kanal açık.", "📻 Radyo: Tahliye koridoru 3 dakika erişilebilir.",
             "📻 Radyo: ARGUS iç yazışmaları sızdırıldı.", "📻 Radyo: Antidot protokolü yarım fakat çalışıyor.",
         ]
-
-    def _kerem_mesaj_tetikle(self, tur: str):
-        havuz = self.kerem_replikler.get(tur, [])
-        if havuz:
-            self.kerem_mesaj = random.choice(havuz)
-            self.kerem_mesaj_sure = 2.5
 
     def guncelle(self, dt, tuslar, fare_pos):
         if self.bitti:
@@ -294,8 +265,6 @@ class OyunEkrani:
             if z.oyuncuya_yakin_mi(self.oyuncu.x, self.oyuncu.y) and z.tip != "sniper_zombi":
                 onceki_can = self.oyuncu.can
                 self.oyuncu.zombi_temas(dt, z.hasar)
-                if random.random() < 0.12:
-                    self._kerem_mesaj_tetikle("hasar")
                 if self.oyuncu.can < onceki_can:
                     self.juice.hasar_alindi_efekti()
                     self._son_hasar_alindi = True
@@ -407,7 +376,6 @@ class OyunEkrani:
             if math.hypot(dm["x"] - self.oyuncu.x, dm["y"] - self.oyuncu.y) <= self.oyuncu.yari_cap + dm["r"]:
                 self.oyuncu.hasar_al(dm["hasar"])
                 self.dusman_mermileri.remove(dm)
-                self._kerem_mesaj_tetikle("hasar")
                 if self.oyuncu.oldu:
                     self._bitis()
                     return
@@ -453,7 +421,6 @@ class OyunEkrani:
 
         self.boss_giris.update(dt)
 
-        self.kerem_mesaj_sure = max(0.0, self.kerem_mesaj_sure - dt)
         self.radyo_sure = max(0.0, self.radyo_sure - dt)
 
         # Terminal
@@ -494,12 +461,6 @@ class OyunEkrani:
                     self.hikaye_secimi = "denge"
                     self.dalga_sis.secim_uygula("denge")
 
-        if self.oyuncu.can < self.oyuncu.max_can * 0.35:
-            self.oyuncu_portre_durum = "kritik"
-        elif self.oyuncu.can < self.oyuncu.max_can * 0.7:
-            self.oyuncu_portre_durum = "yarali"
-        else:
-            self.oyuncu_portre_durum = "saglikli"
         self.level_anim_sure = max(0.0, self.level_anim_sure - dt)
 
          # --- Müzik sistemi: tehdit seviyesine göre ---
@@ -962,10 +923,6 @@ class OyunEkrani:
         sit = self.font_kucuk.render(silah_isim, True, SILAHLAR[ak]["renk"])
         ekran.blit(sit, (GENISLIK - 300 - sit.get_width()//2, YUKSEKLIK - 45))
 
-        # Combo
-        if self.puan_sis.combo >= 5 and random.random() < 0.02:
-            self._kerem_mesaj_tetikle("combo")
-
         if self.puan_sis.combo > 1:
             cx = GENISLIK // 2
             cy = 80
@@ -986,15 +943,6 @@ class OyunEkrani:
     def _ciz_anlatim(self, ekran):
         self.cutscene.draw(ekran)
         self.boss_giris.draw(ekran)
-
-        # Kerem portresi + diyalog
-        px, py = 20, 180
-        pygame.draw.rect(ekran, (15, 15, 20, 220), (px, py, 390, 150), border_radius=10)
-        pygame.draw.rect(ekran, (70, 70, 90), (px, py, 390, 150), 2, border_radius=10)
-        self._ciz_kerem_portre(ekran, px + 55, py + 75)
-        if self.kerem_mesaj_sure > 0 and self.kerem_mesaj:
-            km = self.font_kucuk.render(f"Kerem: {self.kerem_mesaj}", True, BEYAZ)
-            ekran.blit(km, (px + 95, py + 40))
 
         if self.radyo_aktif_sure > 0 and self.radyo_aktif_metin:
             alpha = min(255, int(255 * min(1.0, self.radyo_aktif_sure / 0.5)))
@@ -1040,18 +988,6 @@ class OyunEkrani:
                 px = GENISLIK // 2 + int(math.sin(i * 0.5 + self.level_anim_sure * 9) * 160)
                 py = YUKSEKLIK // 2 - 30 + (i * 10) % 80
                 pygame.draw.circle(ekran, (255, 220, 80), (px, py), 2)
-
-    def _ciz_kerem_portre(self, ekran, cx, cy):
-        pygame.draw.circle(ekran, (220, 200, 170), (cx, cy), 30)
-        pygame.draw.circle(ekran, (30, 30, 40), (cx - 10, cy - 8), 4)
-        pygame.draw.circle(ekran, (30, 30, 40), (cx + 10, cy - 8), 4)
-        if self.oyuncu_portre_durum == "saglikli":
-            pygame.draw.arc(ekran, (20, 20, 20), (cx - 12, cy - 2, 24, 18), 0.2, 2.9, 2)
-        elif self.oyuncu_portre_durum == "yarali":
-            pygame.draw.line(ekran, (20, 20, 20), (cx - 12, cy + 10), (cx + 12, cy + 10), 2)
-        else:
-            pygame.draw.arc(ekran, (20, 20, 20), (cx - 12, cy + 4, 24, 14), 3.4, 6.0, 2)
-            pygame.draw.circle(ekran, (180, 30, 30), (cx + 22, cy - 20), 7)
 
     def _ciz_silah_bar(self, ekran):
         bar_yuk = 80
