@@ -17,12 +17,15 @@ class Raycaster:
         self.tps_offset = 0
         self.side_offset = 0
 
-    def ciz(self, oyuncu, zombiler, mermiler, droplar):
+    def ciz(self, oyuncu, zombiler, mermiler, droplar, harita_veri=None):
         # ZOOM Mekaniği (Dürbün)
         zoom_seviyesi = oyuncu.guncel_zoom if hasattr(oyuncu, "guncel_zoom") else 1.0
         guncel_fov = 75.0 / zoom_seviyesi
         # 1. Atmosferik Gece Arkaplanı
         self.ekran.fill((5, 5, 10))
+        for y in range(0, YUKSEKLIK // 2, 3):
+            ton = min(70, 10 + int((y / (YUKSEKLIK // 2)) * 60))
+            pygame.draw.line(self.ekran, (5 + ton // 3, 8 + ton // 4, 20 + ton), (0, y), (GENISLIK, y))
         for i in range(150):
             pygame.draw.circle(self.ekran, (200, 200, 255), (int(i*137)%GENISLIK, int(i*89)%(YUKSEKLIK//2)), 1)
         
@@ -36,6 +39,12 @@ class Raycaster:
         for i in range(0, YUKSEKLIK // 2, 4):
             v = int(10 + (i / (YUKSEKLIK/2)) * 30)
             pygame.draw.rect(self.ekran, (v, v, v + 5), (0, YUKSEKLIK // 2 + i, GENISLIK, 4))
+        for i in range(1, 18):
+            y = YUKSEKLIK // 2 + int((i / 18) ** 1.7 * (YUKSEKLIK // 2))
+            pygame.draw.line(self.ekran, (20, 20, 24), (0, y), (GENISLIK, y), 1)
+
+        if harita_veri:
+            self._ciz_harita_engelleri_3d(oyuncu, harita_veri, zoom_seviyesi)
 
         # 2. Nesneleri Çiz (Billboard)
         nesneler = []
@@ -87,6 +96,34 @@ class Raycaster:
         # 4. Dürbün Overlay (Eğer Zoom varsa)
         if zoom_seviyesi > 1.1:
             self._ciz_durbun_overlay(zoom_seviyesi)
+
+    def _ciz_harita_engelleri_3d(self, oyuncu, harita_veri, zoom):
+        duvarlar = []
+        for rect in harita_veri.get("engeller", []):
+            cx, cy = rect.centerx, rect.centery
+            dist = math.hypot(cx - oyuncu.x, cy - oyuncu.y)
+            if dist > self.max_derinlik:
+                continue
+            duvarlar.append((dist, rect))
+        duvarlar.sort(reverse=True, key=lambda x: x[0])
+
+        guncel_fov = 75.0 / max(1.0, zoom)
+        for dist, rect in duvarlar:
+            rel_aci = math.atan2(rect.centery - oyuncu.y, rect.centerx - oyuncu.x) - math.radians(oyuncu.aci)
+            while rel_aci > math.pi:
+                rel_aci -= 2 * math.pi
+            while rel_aci < -math.pi:
+                rel_aci += 2 * math.pi
+            if abs(rel_aci) > math.radians(guncel_fov):
+                continue
+
+            ekran_x = (0.5 * (rel_aci / math.radians(guncel_fov / 2)) + 0.5) * GENISLIK
+            boy = int(max(80, min(YUKSEKLIK * 1.1, 70000 / (dist + 1))))
+            en = int(max(18, min(GENISLIK * 0.5, rect.width * 650 / (dist + 80))))
+            y = YUKSEKLIK // 2 - boy // 2
+            renk = (38, 38, 46)
+            pygame.draw.rect(self.ekran, renk, (ekran_x - en // 2, y, en, boy), border_radius=4)
+            pygame.draw.rect(self.ekran, (70, 70, 85), (ekran_x - en // 2, y, en, boy), 2, border_radius=4)
 
     def _ciz_durbun_overlay(self, zoom):
         # Siyah kenarlar (Scope Mask)

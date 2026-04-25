@@ -164,7 +164,7 @@ class Oyuncu(pygame.sprite.Sprite):
         self.aktif_silah = self.envanter[(idx + yon) % len(self.envanter)]
         self._silah_sprite_guncelle()
 
-    def update(self, dt, tuslar, fare_pos, mermiler, ekran_w, ekran_h, serbest_bakis=False):
+    def update(self, dt, tuslar, fare_pos, mermiler, ekran_w, ekran_h, serbest_bakis=False, hareket_cozucu=None):
         sprint = tuslar.get("sprint", False)
         nisan = tuslar.get("nisan", False)
         
@@ -203,9 +203,9 @@ class Oyuncu(pygame.sprite.Sprite):
         
         # 3D modunda hareket oyuncunun baktığı yöne göre olmalı!
         if serbest_bakis:
-            self._hareket_3d(dt, tuslar, ekran_w, ekran_h, hiz_carpani)
+            self._hareket_3d(dt, tuslar, ekran_w, ekran_h, hiz_carpani, hareket_cozucu)
         else:
-            self._hareket(dt, tuslar, ekran_w, ekran_h, hiz_carpani)
+            self._hareket(dt, tuslar, ekran_w, ekran_h, hiz_carpani, hareket_cozucu)
             
         self._don(fare_pos, serbest_bakis)
         
@@ -229,7 +229,7 @@ class Oyuncu(pygame.sprite.Sprite):
         if tuslar.get("ult") and self.ult_bekleme <= 0:
             self._ultimate_kullan(mermiler)
 
-    def _hareket(self, dt, tuslar, ekran_w, ekran_h, hiz_carpani):
+    def _hareket(self, dt, tuslar, ekran_w, ekran_h, hiz_carpani, hareket_cozucu=None):
         dx = dy = 0
         if tuslar.get("yukari"):  dy -= 1
         if tuslar.get("asagi"):   dy += 1
@@ -238,13 +238,16 @@ class Oyuncu(pygame.sprite.Sprite):
         if dx != 0 and dy != 0:
             dx *= 0.7071; dy *= 0.7071
         v = self.gercek_hiz * hiz_carpani
-        self.x += dx * v * dt
-        self.y += dy * v * dt
+        yeni_x = self.x + dx * v * dt
+        yeni_y = self.y + dy * v * dt
         self._son_hareket = (dx != 0 or dy != 0)
-        self.x = max(self.yari_cap, min(ekran_w - self.yari_cap, self.x))
-        self.y = max(self.yari_cap, min(ekran_h - self.yari_cap, self.y))
+        yeni_x = max(self.yari_cap, min(ekran_w - self.yari_cap, yeni_x))
+        yeni_y = max(self.yari_cap, min(ekran_h - self.yari_cap, yeni_y))
+        if hareket_cozucu:
+            yeni_x, yeni_y = hareket_cozucu(self.x, self.y, yeni_x, yeni_y, self.yari_cap)
+        self.x, self.y = yeni_x, yeni_y
 
-    def _hareket_3d(self, dt, tuslar, ekran_w, ekran_h, hiz_carpani):
+    def _hareket_3d(self, dt, tuslar, ekran_w, ekran_h, hiz_carpani, hareket_cozucu=None):
         # 3D Hareket: Baktığı yöne göre ileri/geri ve sağa/sola strafe
         aci_rad = math.radians(self.aci)
         v = self.gercek_hiz * hiz_carpani
@@ -269,11 +272,14 @@ class Oyuncu(pygame.sprite.Sprite):
             dx /= mag
             dy /= mag
             
-        self.x += dx * v * dt
-        self.y += dy * v * dt
+        yeni_x = self.x + dx * v * dt
+        yeni_y = self.y + dy * v * dt
         self._son_hareket = (dx != 0 or dy != 0)
-        self.x = max(self.yari_cap, min(ekran_w - self.yari_cap, self.x))
-        self.y = max(self.yari_cap, min(ekran_h - self.yari_cap, self.y))
+        yeni_x = max(self.yari_cap, min(ekran_w - self.yari_cap, yeni_x))
+        yeni_y = max(self.yari_cap, min(ekran_h - self.yari_cap, yeni_y))
+        if hareket_cozucu:
+            yeni_x, yeni_y = hareket_cozucu(self.x, self.y, yeni_x, yeni_y, self.yari_cap)
+        self.x, self.y = yeni_x, yeni_y
 
     def _don(self, fare_pos, serbest_bakis=False):
         if not serbest_bakis:
