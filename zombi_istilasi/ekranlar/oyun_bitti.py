@@ -15,13 +15,16 @@ class OyunBitti:
         self.son_puan = 0
         self.son_dalga = 0
         self.yuksek_skorlar = []
+        self.bitis_tipi = "devam"
 
     # ----------------------------------------------------------
-    def ayarla(self, puan, dalga, yuksek_skorlar):
+    def ayarla(self, puan, dalga, yuksek_skorlar, bitis_tipi="devam"):
+
         self.son_puan = puan
         self.son_dalga = dalga
         self.yuksek_skorlar = yuksek_skorlar
         self.zaman = 0.0
+        self.bitis_tipi = bitis_tipi
 
     # ----------------------------------------------------------
     def guncelle(self, dt):
@@ -29,12 +32,11 @@ class OyunBitti:
 
     # ----------------------------------------------------------
     def ciz(self, ekran):
-        # Koyu kırmızımsı arka plan
-        ekran.fill((25, 8, 8))
+        zafer = self.bitis_tipi == "zafer"
+        ekran.fill((8, 20, 14) if zafer else (25, 8, 8))
 
-        # Titreyen başlık
         sal = math.sin(self.zaman * 3) * 4
-        baslik = self.font_buyuk.render("ÖLDÜN!", True, KIRMIZI)
+        baslik = self.font_buyuk.render("ZAFER" if zafer else "ÖLDÜN!", True, YESIL if zafer else KIRMIZI)
         ekran.blit(baslik, (GENISLIK // 2 - baslik.get_width() // 2, 80 + int(sal)))
 
         # Skor ve dalga
