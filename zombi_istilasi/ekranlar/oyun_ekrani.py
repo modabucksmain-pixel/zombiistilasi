@@ -76,6 +76,7 @@ class OyunEkrani:
         self._sifirla()
 
     def _sifirla(self):
+        self.yukleme_notlari = iter_loading_notes()
         self.mermiler    = pygame.sprite.Group()
         self.zombiler    = pygame.sprite.Group()
         self.droplar     = pygame.sprite.Group()

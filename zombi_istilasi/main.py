@@ -213,7 +213,10 @@ def main():
         elif durum == DURUM_GUNLUK:
             gunluk.ciz(ekran)
         elif durum == DURUM_SHOP:
-            note = next(oyun_ekrani.yukleme_notlari)
+            note = next(
+                oyun_ekrani.yukleme_notlari,
+                "Sistemler stabilize ediliyor...",
+            )
             ekran.fill((0, 0, 0))
             f = pygame.font.SysFont("Consolas", 24)
             t = f.render(f"Kerem'in Notu: {note}", True, (220, 220, 220))
