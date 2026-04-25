@@ -67,6 +67,9 @@ _ZR = {
     "patlayan": {"hiz": 70,  "can": 140, "hasar": 35, "skor": 150, "para": 130, "r": 22, "renk": (200, 80,  30),  "ic": (255, 130, 60)},
     "zehirli":  {"hiz": 75,  "can": 110, "hasar": 15, "skor": 140, "para": 120, "r": 20, "renk": (60,  200, 100), "ic": (120, 255, 150)},
     "boss":     {"hiz": 55,  "can": 1200,"hasar": 40, "skor": 800, "para": 600, "r": 38, "renk": (140, 50,  200), "ic": (180, 90,  240)},
+    "zirhli":   {"hiz": 62,  "can": 260, "hasar": 16, "skor": 200, "para": 170, "r": 23, "renk": (90, 100, 120), "ic": (150, 160, 180)},
+    "sniper_zombi": {"hiz": 70, "can": 90, "hasar": 12, "skor": 180, "para": 160, "r": 17, "renk": (120, 90, 150), "ic": (190, 150, 230)},
+    "kopek":    {"hiz": 300, "can": 20,  "hasar": 12, "skor": 110, "para": 95,  "r": 10, "renk": (120, 90, 70), "ic": (180, 140, 100)},
 }
 ZOMBI_TIPLER = _ZR
 
@@ -157,6 +160,8 @@ DURUM_OYUN  = "oyun"
 DURUM_PAUSE = "pause"
 DURUM_SHOP  = "shop"
 DURUM_BITTI = "bitti"
+DURUM_GUNLUK = "gunluk"
+DURUM_OZET = "ozet"
 PROJE_DIZIN   = os.path.dirname(os.path.abspath(__file__))
 KAYIT_DOSYASI = os.path.join(PROJE_DIZIN, "kayitlar", "highscore.json")
 os.makedirs(os.path.dirname(KAYIT_DOSYASI), exist_ok=True)

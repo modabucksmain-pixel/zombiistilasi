@@ -56,6 +56,11 @@ class Oyuncu(pygame.sprite.Sprite):
         self.recoil = 0.0
         self.guncel_yayilma = 0.0
         self.silah_sprite = None
+        self.ates_seri_sure = 0.0
+        self.son_ates_zamani = 0.0
+        self.namlu_isi = 0.0
+        self.namlu_kilit_sure = 0.0
+        self.toplam_atis = 0
 
         self._image_olustur()
         self.rect = self.image.get_rect(center=(int(self.x), int(self.y)))
@@ -213,6 +218,9 @@ class Oyuncu(pygame.sprite.Sprite):
         if self.hasar_sayac > 0: self.hasar_sayac -= dt
         if self.hasarli_sayac > 0: self.hasarli_sayac -= dt
         if self.ult_bekleme > 0: self.ult_bekleme -= dt
+        if self.namlu_kilit_sure > 0:
+            self.namlu_kilit_sure -= dt
+        self.namlu_isi = max(0.0, self.namlu_isi - 18.0 * dt)
         
         if self.kalkan_yenilenme_sayaci > 0:
             self.kalkan_yenilenme_sayaci -= dt
@@ -358,6 +366,8 @@ class Oyuncu(pygame.sprite.Sprite):
         pygame.draw.circle(ekran, veri["renk"], (int(namlu_x), int(namlu_y)), 2)
 
     def _ates(self, mermiler):
+        if self.namlu_kilit_sure > 0:
+            return
         veri = self.silah_verisi
         adeti = veri["mermi_adeti"]
         yayilma = getattr(self, "guncel_yayilma", veri["yayilma"])
@@ -368,14 +378,38 @@ class Oyuncu(pygame.sprite.Sprite):
         namlu_x = self.x + math.cos(math.radians(self.aci)) * (self.yari_cap + 12)
         namlu_y = self.y + math.sin(math.radians(self.aci)) * (self.yari_cap + 12)
             
+        simdi = pygame.time.get_ticks() / 1000.0
+        if simdi - self.son_ates_zamani < 0.32:
+            self.ates_seri_sure += simdi - self.son_ates_zamani
+        else:
+            self.ates_seri_sure = 0.0
+        self.son_ates_zamani = simdi
+
+        isinma_carpani = 1.0
+        if "minigun" in self.aktif_silah or "lazer" in self.aktif_silah:
+            oran = max(0.0, min(1.0, self.ates_seri_sure / 2.0))
+            isinma_carpani = 0.4 + 0.6 * oran
+
+        self.toplam_atis += 1
+        patron_mermi = self.toplam_atis % 20 == 0
+
         for i in range(adeti):
-            # Artık tek mermi de olsa yayılma (recoil/hareket) etki ediyor
             aci_offset = random.uniform(-yayilma / 2, yayilma / 2)
-            m = Mermi(namlu_x, namlu_y, self.aci + aci_offset, veri, self.hasar_carpani)
+            atis_veri = veri.copy()
+            if patron_mermi:
+                atis_veri["renk"] = (255, 210, 40)
+            m = Mermi(namlu_x, namlu_y, self.aci + aci_offset, atis_veri, self.hasar_carpani * isinma_carpani)
+            if patron_mermi:
+                m.hasar *= 3.0
+                m.patron = True
             mermiler.add(m)
-            
+
         self.ates_sayac = veri["ates_hizi"]
         
+        self.namlu_isi = min(100.0, self.namlu_isi + max(4.0, 8.0 - veri["ates_hizi"] * 3.0))
+        if self.namlu_isi >= 100.0:
+            self.namlu_kilit_sure = 2.0
+
         # Silaha göre Recoil (Geri tepme) ekle
         self.recoil += veri["yayilma"] * 0.8 + 2.0
         self.recoil = min(self.recoil, 45.0) # Maksimum recoil sınırı
