@@ -6,7 +6,7 @@ import math
 import random
 from ayarlar import (
     GENISLIK, YUKSEKLIK, BEYAZ, SIYAH, KIRMIZI,
-    YESIL, ACIK_GRI, ARKAPLAN, DURUM_OYUN, ALTIN, CAMGOBEGI, MOR
+    YESIL, ACIK_GRI, ARKAPLAN, DURUM_META, DURUM_OYUN, ALTIN, CAMGOBEGI, MOR
 )
 
 
@@ -47,6 +47,7 @@ class AnaMenu:
 
         self.butonlar = [
             {"metin": "OYNA",  "durum": DURUM_OYUN, "renk": (60, 200, 80)},
+            {"metin": "META",  "durum": DURUM_META, "renk": (120, 80, 220)},
             {"metin": "ÇIKIŞ", "durum": "cikis",    "renk": (180, 40, 40)},
         ]
 

@@ -6,10 +6,12 @@
 from __future__ import annotations
 import json
 import os
+import logging
 import pygame
 from ayarlar import GENISLIK, YUKSEKLIK, BEYAZ, SIYAH, KIRMIZI, YESIL, ALTIN, CAMGOBEGI, MOR, PROJE_DIZIN
 from sistemler.debug_log import debug
 
+logger = logging.getLogger(__name__)
 
 AYARLAR_DOSYASI = os.path.join(PROJE_DIZIN, "kayitlar", "ayarlar.json")
 
@@ -37,6 +39,8 @@ def ayarlari_yukle() -> dict:
             "ekranlar.ayarlar_menusu.ayarlari_yukle",
             f"ayar dosyasi okunamadi yol={AYARLAR_DOSYASI} hata={e}",
         )
+    except Exception:
+        logger.exception("Ayarlar yüklenemedi; varsayılan ayarlar kullanılacak.")
     return VARSAYILAN_AYARLAR.copy()
 
 
@@ -50,6 +54,8 @@ def ayarlari_kaydet(ayarlar: dict) -> None:
             "ekranlar.ayarlar_menusu.ayarlari_kaydet",
             f"ayar dosyasi yazilamadi yol={AYARLAR_DOSYASI} input={ayarlar} hata={e}",
         )
+    except Exception:
+        logger.exception("Ayarlar kaydedilemedi: %s", AYARLAR_DOSYASI)
 
 
 class AyarlarMenusu:

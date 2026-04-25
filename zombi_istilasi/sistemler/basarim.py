@@ -4,6 +4,7 @@
 """Oyun içi başarımları takip eder ve kayıt eder."""
 from __future__ import annotations
 import json
+import logging
 import os
 from dataclasses import dataclass, field
 from typing import Callable
@@ -13,6 +14,7 @@ from sistemler.debug_log import debug
 
 
 KAYIT_DOSYASI = os.path.join(PROJE_DIZIN, "kayitlar", "basarimlar.json")
+LOG = logging.getLogger(__name__)
 
 
 @dataclass
@@ -91,6 +93,11 @@ class BasarimSistemi:
             "sok_oldurulen": 0,
             "zehir_efekt_oldurulen": 0,
             "boss_tipleri": 0,
+            "sprint_mesafe": 0,
+            "en_hizli_dalga_suresi": 0,
+            "kesfedilen_bolge_sayisi": 0,
+            "toplam_bolge_sayisi": 0,
+            "can_az_dalga": 0,
         }
         self._yukle()
 
@@ -158,19 +165,39 @@ class BasarimSistemi:
             "zehirli_50":   st["zehirli_oldurulen"] >= 50,
             "patlayan_20":  st["patlayan_oldurulen"] >= 20,
             "ult_kullan":   st["ult_kullanildi"] >= 1,
+            "sprint_km":    st["sprint_mesafe"] >= 5000,
             "ates_ilk":     st["ates_oldurulen"] >= 30,
             "donma_ilk":    st["donma_oldurulen"] >= 30,
             "sok_ilk":      st["sok_oldurulen"] >= 30,
             "zehir_ilk":    st["zehir_efekt_oldurulen"] >= 30,
             "dalga_5_tam":  st["dalga"] >= 5,
+            "dalga_tam_hiz":0 < st["en_hizli_dalga_suresi"] <= 30,
             "terminal_3":   st["terminal_okunan"] >= 3,
             "npc_5":        st["npc_konusulan"] >= 5,
             "can_az":       st.get("can_az_dalga", 0) >= 1,
+            "tum_harita":   st["toplam_bolge_sayisi"] > 0 and st["kesfedilen_bolge_sayisi"] >= st["toplam_bolge_sayisi"],
         }
+
+        self._basarim_tutarlilik_kontrolu(kontroller)
 
         for kimlik, kosul in kontroller.items():
             if kosul and kimlik not in self.tamamlanan_ids:
                 self._tamamla(kimlik)
+
+    def _basarim_tutarlilik_kontrolu(self, kontroller: dict[str, bool]) -> None:
+        """Tanımlı başarımlar ile kontrol haritasının eşleşmesini doğrular."""
+        tanim_kimlikleri = {t["kimlik"] for t in BASARIMLAR_TANIM}
+        kontrol_kimlikleri = set(kontroller)
+
+        eksik_kontrol = sorted(tanim_kimlikleri - kontrol_kimlikleri)
+        fazla_kontrol = sorted(kontrol_kimlikleri - tanim_kimlikleri)
+
+        if eksik_kontrol or fazla_kontrol:
+            LOG.warning(
+                "Başarım tanım/kontrol uyumsuzluğu | eksik_kontrol=%s | fazla_kontrol=%s",
+                eksik_kontrol,
+                fazla_kontrol,
+            )
 
     def _tamamla(self, kimlik: str) -> None:
         self.tamamlanan_ids.add(kimlik)

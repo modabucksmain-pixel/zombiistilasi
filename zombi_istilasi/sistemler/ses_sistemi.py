@@ -6,19 +6,23 @@ import io
 import struct
 import random
 from sistemler.debug_log import debug, error
+import logging
 
 # VERSION: 3.0 (Ultimate Realism Sound Engine)
 print("Ses Sistemi v3.0 Yükleniyor... (Gerçekçi Silah Sesleri Aktif)")
+logger = logging.getLogger(__name__)
 
 class SesSistemi:
     def __init__(self):
+        self.sesler = {}
+        self.baslatildi = False
         try:
             pygame.mixer.init(frequency=44100, size=-16, channels=1)
             self.dizin = os.path.join("assets", "sounds")
             if not os.path.exists(self.dizin):
                 os.makedirs(self.dizin)
-            self.sesler = {}
             self._yukle()
+            self.baslatildi = True
         except Exception as e:
             error(f"sistemler.ses_sistemi.SesSistemi.__init__ mixer init/yukle hatasi: {e}")
 
@@ -90,12 +94,18 @@ class SesSistemi:
                         "sistemler.ses_sistemi.SesSistemi._yukle",
                         f"ses dosyasi yuklenemedi tip={t} yol={yol} hata={e}",
                     )
+                except Exception:
+                    logger.exception("Ses dosyası yüklenemedi: %s", yol)
+                except Exception as e:
+                    print(f"Ses yükleme hatası (anahtar={t}, yol={yol}): {e}")
             
             # Dosya yoksa üret
             if t not in self.sesler:
                 self.sesler[t] = self._prosedurel_wav_uret(t)
 
     def oynat(self, isim):
+        if not self.baslatildi:
+            return
         if isim in self.sesler:
             self.sesler[isim].play()
 
