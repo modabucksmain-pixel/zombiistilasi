@@ -4,6 +4,7 @@
 import pygame
 import math
 import random
+import logging
 from ayarlar import (
     GENISLIK, YUKSEKLIK, ARKAPLAN, BEYAZ, SIYAH, KIRMIZI, YESIL, SARI, ALTIN,
     SILAHLAR, SILAH_SIRASI, ZIRH_MAVI, CAMGOBEGI, PEMBE, MOR, TURUNCU,
@@ -31,6 +32,8 @@ from sistemler.kamera import Kamera
 from sistemler.dunya_haritasi import DunyaHaritasi, DUNYA_W, DUNYA_H
 from sistemler.spawn_sistemi import SurekliSpawnSistemi
 from sistemler.hikaye_yoneticisi import HikayeYoneticisi
+
+logger = logging.getLogger(__name__)
 
 class OyunEkrani:
     def __init__(self):
@@ -143,13 +146,15 @@ class OyunEkrani:
         if self.is_3d:
             try:
                 pygame.mouse.set_relative_mode(True)
-            except:
+            except pygame.error:
+                logger.exception("Relative mouse mode etkinleştirilemedi; klasik fare yakalama fallback'i uygulanıyor.")
                 pygame.mouse.set_visible(False)
                 pygame.event.set_grab(True)
         else:
             try:
                 pygame.mouse.set_relative_mode(False)
-            except:
+            except pygame.error:
+                logger.exception("Relative mouse mode kapatılamadı; klasik fare serbest bırakma fallback'i uygulanıyor.")
                 pygame.mouse.set_visible(True)
                 pygame.event.set_grab(False)
 

@@ -5,9 +5,11 @@ import wave
 import io
 import struct
 import random
+import logging
 
 # VERSION: 3.0 (Ultimate Realism Sound Engine)
 print("Ses Sistemi v3.0 Yükleniyor... (Gerçekçi Silah Sesleri Aktif)")
+logger = logging.getLogger(__name__)
 
 class SesSistemi:
     def __init__(self):
@@ -82,8 +84,10 @@ class SesSistemi:
         for t in tipler:
             yol = os.path.join(self.dizin, f"{t}.wav")
             if os.path.exists(yol):
-                try: self.sesler[t] = pygame.mixer.Sound(yol)
-                except: pass
+                try:
+                    self.sesler[t] = pygame.mixer.Sound(yol)
+                except Exception:
+                    logger.exception("Ses dosyası yüklenemedi: %s", yol)
             
             # Dosya yoksa üret
             if t not in self.sesler:
