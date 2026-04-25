@@ -45,6 +45,7 @@ class Zombi(pygame.sprite.Sprite):
         self.patlama_sayac = -1.0
         self.patlamaya_hazir = False
         self.sniper_sayac = 1.2
+        self.son_vurus_headshot = False
 
         self._image_olustur()
         self.rect = self.image.get_rect(center=(int(self.x), int(self.y)))
@@ -198,6 +199,9 @@ class Zombi(pygame.sprite.Sprite):
         mc, mr = mermi.get_circle()
         if math.hypot(mc[0] - self.x, mc[1] - self.y) < (self.yari_cap + mr):
             hasar = mermi.hasar
+            self.son_vurus_headshot = mc[1] <= self.y - self.yari_cap * 0.3
+            if self.son_vurus_headshot:
+                hasar *= 2.0
             if self.tip == "zirhli":
                 # Önden %70 azaltma
                 incoming_x = -mermi.vx
