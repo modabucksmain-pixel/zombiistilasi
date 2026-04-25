@@ -22,8 +22,9 @@ class Duraklama:
 
         self._ciz_buton(ekran, "DEVAM ET",  GENISLIK // 2, 320, YESIL)
         self._ciz_buton(ekran, "KAYITLAR",  GENISLIK // 2, 390, (180, 180, 80))
-        self._ciz_buton(ekran, "ANA MENÜ",  GENISLIK // 2, 460, (100, 150, 220))
-        self._ciz_buton(ekran, "ÇIKIŞ",     GENISLIK // 2, 530, KIRMIZI)
+        self._ciz_buton(ekran, "META",      GENISLIK // 2, 460, (120, 80, 220))
+        self._ciz_buton(ekran, "ANA MENÜ",  GENISLIK // 2, 530, (100, 150, 220))
+        self._ciz_buton(ekran, "ÇIKIŞ",     GENISLIK // 2, 600, KIRMIZI)
 
     # ----------------------------------------------------------
     def _ciz_buton(self, ekran, metin, cx, cy, renk):
@@ -46,7 +47,9 @@ class Duraklama:
             if pygame.Rect(GENISLIK // 2 - 120, 365, 240, 50).collidepoint(fare):
                 return "gunluk"
             if pygame.Rect(GENISLIK // 2 - 120, 435, 240, 50).collidepoint(fare):
-                return "menu"
+                return "meta"
             if pygame.Rect(GENISLIK // 2 - 120, 505, 240, 50).collidepoint(fare):
+                return "menu"
+            if pygame.Rect(GENISLIK // 2 - 120, 575, 240, 50).collidepoint(fare):
                 return "cikis"
         return None
