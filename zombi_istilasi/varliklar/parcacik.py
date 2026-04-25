@@ -87,7 +87,7 @@ class BasarimBildirimi:
     def ciz(self, ekran, font_k, font_m, ekran_w, ekran_h):
         bw, bh = 300, 60
         bx = int(ekran_w - bw - self.slide_x)
-        by = ekran_h - 80
+        by = 400
         surf = pygame.Surface((bw, bh), pygame.SRCALPHA)
         alpha = int(220 * min(1.0, self.omur / 1.0))
         surf.fill((30, 20, 50, alpha))

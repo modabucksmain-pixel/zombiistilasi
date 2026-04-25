@@ -350,10 +350,10 @@ class Boss(pygame.sprite.Sprite):
 
     def can_bar_ciz(self, ekran, genislik, yukseklik, font):
         """Ekranın üstüne tam boss can barı çiz."""
-        bar_gen = genislik - 100
+        bar_gen = 600
         bar_yuk = 22
-        bar_x = 50
-        bar_y = 14
+        bar_x = (genislik - bar_gen) // 2
+        bar_y = 20
 
         # Arkaplan
         pygame.draw.rect(ekran, (20, 0, 0), (bar_x - 2, bar_y - 2, bar_gen + 4, bar_yuk + 4),

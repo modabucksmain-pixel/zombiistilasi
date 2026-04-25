@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "isim": "Örnek Mod",
+    "yazar": "Dr. Kerem Aydın",
+    "versiyon": "1.0.0",
+    "aciklama": "Zombi İstilası için örnek mod. Yeni zombi, silah ve harita ekler."
+  },
+  "zombi_tipleri": {
+    "cyber_zombi": {
+      "hiz": 130,
+      "can": 180,
+      "hasar": 22,
+      "skor": 250,
+      "para": 220,
+      "r": 20,
+      "renk": [
+        0,
+        200,
+        255
+      ],
+      "ic": [
+        100,
+        240,
+        255
+      ]
+    }
+  },
+  "silahlar": {
+    "plasma_rifle_nrm": {
+      "isim": "Plazma Tüfeği",
+      "emoji": "🔵",
+      "fiyat": 6000,
+      "hasar": 200,
+      "ates_hizi": 0.4,
+      "mermi_hizi": 1600,
+      "yayilma": 2,
+      "mermi_adeti": 1,
+      "kapasite": 30,
+      "renk": [
+        0,
+        200,
+        255
+      ],
+      "tip": "delici",
+      "patlama_r": 0,
+      "efekt": "sok",
+      "aciklama": [
+        "Plazma hasar",
+        "Elektro efekt",
+        "Zırh delici"
+      ]
+    }
+  },
+  "haritalar": [
+    {
+      "isim": "Deprem Bölgesi",
+      "zemin": [
+        15,
+        12,
+        18
+      ],
+      "cizgi": [
+        30,
+        25,
+        38
+      ],
+      "karo": 80,
+      "engeller": [
+        [
+          150,
+          200,
+          300,
+          80
+        ],
+        [
+          600,
+          150,
+          200,
+          300
+        ]
+      ]
+    }
+  ],
+  "ayarlar": {
+    "zombi_can_carpani": 1.1,
+    "para_carpani": 1.2
+  }
+}

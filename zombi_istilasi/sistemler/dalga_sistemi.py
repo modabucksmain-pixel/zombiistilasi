@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 from varliklar.zombi import Zombi
+from varliklar.boss import Boss
 
 BOSS_DIALOGS = {
     5: ("Direktör Selim Koç", "Dönüşüm bir felaket değil, ürün lansmanı."),
@@ -15,8 +16,9 @@ BOSS_DIALOGS = {
 
 
 class DalgaSistemi:
-    def __init__(self, zombiler_grubu):
+    def __init__(self, zombiler_grubu, boss_grubu=None):
         self.zombiler = zombiler_grubu
+        self.boss_grubu = boss_grubu
         self.dalga_no = 0
         self.spawn_listesi = []
         self.spawn_sayac = 0.0
@@ -77,9 +79,14 @@ class DalgaSistemi:
             self.spawn_sayac -= dt
             if self.spawn_sayac <= 0:
                 tip = self.spawn_listesi.pop(0)
-                self.zombiler.add(Zombi.rastgele_dogur(ekran_w, ekran_h, tip))
+                if tip == "boss" and self.boss_grubu is not None:
+                    boss_tipi = Boss.dalga_icin_boss_sec(self.dalga_no)
+                    b = Boss.kenar_spawn(ekran_w, ekran_h, boss_tipi)
+                    self.boss_grubu.add(b)
+                else:
+                    self.zombiler.add(Zombi.rastgele_dogur(ekran_w, ekran_h, tip))
                 self.spawn_sayac = self.spawn_aralik
-        elif len(self.zombiler) == 0:
+        elif len(self.zombiler) == 0 and (self.boss_grubu is None or len(self.boss_grubu) == 0):
             self.dalga_aktif = False
             self.dalga_bitti = True
             self.bildirim_metni = "✓ Dalga Temizlendi!"

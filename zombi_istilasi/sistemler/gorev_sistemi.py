@@ -162,7 +162,7 @@ class GorevSistemi:
         """Ekrana görev panelini ve bildirimleri çizer."""
         import pygame
         panel_x = genislik - 260
-        panel_y = 100
+        panel_y = 190
         panel_gen = 250
         satir_yuk = 52
 

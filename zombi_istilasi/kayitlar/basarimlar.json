@@ -1,0 +1,28 @@
+{
+  "tamamlanan": [
+    "onden_gun",
+    "ilk_kan",
+    "npc_5",
+    "terminal_3"
+  ],
+  "istatistikler": {
+    "oldurulen": 16,
+    "headshot": 6,
+    "max_kombo": 4,
+    "boss_oldurulen": 0,
+    "dalga": 3,
+    "hasarsiz_dalga": 0,
+    "para": 1778,
+    "silah_sayisi": 0,
+    "zehirli_oldurulen": 0,
+    "patlayan_oldurulen": 0,
+    "ult_kullanildi": 0,
+    "terminal_okunan": 4,
+    "npc_konusulan": 9,
+    "ates_oldurulen": 0,
+    "donma_oldurulen": 0,
+    "sok_oldurulen": 0,
+    "zehir_efekt_oldurulen": 6,
+    "boss_tipleri": 0
+  }
+}

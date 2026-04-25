@@ -61,17 +61,40 @@ MERMI_YARI_CAP = 5
 ZOMBI_YARI_CAP = 18
 
 _ZR = {
-    "normal":   {"hiz": 80,  "can": 70,  "hasar": 10, "skor": 50,  "para": 50,  "r": 18, "renk": ZOMBI_YESIL,     "ic": (130, 190, 100)},
-    "hizli":    {"hiz": 160, "can": 40,  "hasar": 8,  "skor": 80,  "para": 80,  "r": 16, "renk": (180, 220, 80),  "ic": (220, 255, 120)},
-    "kosucu":   {"hiz": 240, "can": 25,  "hasar": 5,  "skor": 120, "para": 100, "r": 14, "renk": (255, 180, 50),  "ic": (255, 220, 120)},
-    "patlayan": {"hiz": 70,  "can": 140, "hasar": 35, "skor": 150, "para": 130, "r": 22, "renk": (200, 80,  30),  "ic": (255, 130, 60)},
-    "zehirli":  {"hiz": 75,  "can": 110, "hasar": 15, "skor": 140, "para": 120, "r": 20, "renk": (60,  200, 100), "ic": (120, 255, 150)},
-    "boss":     {"hiz": 55,  "can": 1200,"hasar": 40, "skor": 800, "para": 600, "r": 38, "renk": (140, 50,  200), "ic": (180, 90,  240)},
-    "zirhli":   {"hiz": 62,  "can": 260, "hasar": 16, "skor": 200, "para": 170, "r": 23, "renk": (90, 100, 120), "ic": (150, 160, 180)},
-    "sniper_zombi": {"hiz": 70, "can": 90, "hasar": 12, "skor": 180, "para": 160, "r": 17, "renk": (120, 90, 150), "ic": (190, 150, 230)},
-    "kopek":    {"hiz": 300, "can": 20,  "hasar": 12, "skor": 110, "para": 95,  "r": 10, "renk": (120, 90, 70), "ic": (180, 140, 100)},
+    "normal":      {"hiz": 80,  "can": 70,  "hasar": 10, "skor": 50,  "para": 50,  "r": 18, "renk": ZOMBI_YESIL,     "ic": (130, 190, 100)},
+    "hizli":       {"hiz": 160, "can": 40,  "hasar": 8,  "skor": 80,  "para": 80,  "r": 16, "renk": (180, 220, 80),  "ic": (220, 255, 120)},
+    "kosucu":      {"hiz": 240, "can": 25,  "hasar": 5,  "skor": 120, "para": 100, "r": 14, "renk": (255, 180, 50),  "ic": (255, 220, 120)},
+    "patlayan":    {"hiz": 70,  "can": 140, "hasar": 35, "skor": 150, "para": 130, "r": 22, "renk": (200, 80,  30),  "ic": (255, 130, 60)},
+    "zehirli":     {"hiz": 75,  "can": 110, "hasar": 15, "skor": 140, "para": 120, "r": 20, "renk": (60,  200, 100), "ic": (120, 255, 150)},
+    "boss":        {"hiz": 55,  "can": 1200,"hasar": 40, "skor": 800, "para": 600, "r": 38, "renk": (140, 50,  200), "ic": (180, 90,  240)},
+    "zirhli":      {"hiz": 62,  "can": 260, "hasar": 16, "skor": 200, "para": 170, "r": 23, "renk": (90, 100, 120), "ic": (150, 160, 180)},
+    "sniper_zombi":{"hiz": 70,  "can": 90,  "hasar": 12, "skor": 180, "para": 160, "r": 17, "renk": (120, 90, 150),  "ic": (190, 150, 230)},
+    "kopek":       {"hiz": 300, "can": 20,  "hasar": 12, "skor": 110, "para": 95,  "r": 10, "renk": (120, 90, 70),   "ic": (180, 140, 100)},
+    "elektrik":    {"hiz": 90,  "can": 120, "hasar": 18, "skor": 190, "para": 160, "r": 19, "renk": (255, 255, 60),  "ic": (255, 255, 150)},
+    "vampir":      {"hiz": 110, "can": 100, "hasar": 20, "skor": 210, "para": 180, "r": 18, "renk": (120, 20, 180),  "ic": (200, 80, 255)},
+    "donusturucu": {"hiz": 55,  "can": 180, "hasar": 8,  "skor": 230, "para": 200, "r": 21, "renk": (50, 180, 80),   "ic": (100, 255, 130)},
+    "kalkan":      {"hiz": 65,  "can": 120, "hasar": 14, "skor": 220, "para": 190, "r": 21, "renk": (60, 80, 180),   "ic": (100, 140, 255)},
+    "mini_boss":   {"hiz": 58,  "can": 400, "hasar": 24, "skor": 350, "para": 300, "r": 30, "renk": (160, 40, 60),   "ic": (220, 80, 100)},
 }
 ZOMBI_TIPLER = _ZR
+
+# Hasar zayıflık tablosu: tip -> {efekt: carpan}
+ZOMBI_ZAYIFLIK: dict[str, dict[str, float]] = {
+    "normal":      {"yanma": 1.5, "donma": 1.0, "zehir": 1.0, "sok": 1.0},
+    "hizli":       {"yanma": 1.2, "donma": 1.4, "zehir": 1.0, "sok": 1.2},
+    "kosucu":      {"yanma": 1.0, "donma": 1.6, "zehir": 1.0, "sok": 1.0},
+    "patlayan":    {"yanma": 0.5, "donma": 0.2, "zehir": 1.2, "sok": 1.0},
+    "zehirli":     {"yanma": 1.3, "donma": 1.0, "zehir": 0.1, "sok": 1.7},
+    "boss":        {"yanma": 0.8, "donma": 0.8, "zehir": 0.8, "sok": 0.8},
+    "zirhli":      {"yanma": 1.0, "donma": 0.7, "zehir": 1.0, "sok": 0.6},
+    "sniper_zombi":{"yanma": 1.0, "donma": 1.0, "zehir": 1.5, "sok": 1.0},
+    "kopek":       {"yanma": 1.4, "donma": 1.8, "zehir": 1.0, "sok": 1.0},
+    "elektrik":    {"yanma": 1.0, "donma": 1.2, "zehir": 1.0, "sok": 0.1},
+    "vampir":      {"yanma": 1.6, "donma": 1.0, "zehir": 0.5, "sok": 1.2},
+    "donusturucu": {"yanma": 1.2, "donma": 1.0, "zehir": 1.0, "sok": 1.4},
+    "kalkan":      {"yanma": 1.0, "donma": 0.8, "zehir": 1.0, "sok": 0.8},
+    "mini_boss":   {"yanma": 0.9, "donma": 0.9, "zehir": 0.9, "sok": 0.9},
+}
 
 XP_BAZA = 100
 XP_CARPAN = 1.6
@@ -146,6 +169,8 @@ YUKSELTMELER = {
     "kalkan": {"isim": "Kalkan",      "emoji": "🛡️",  "aciklama": "+40 Max Kalkan",     "fiyat": 500,  "max_seviye": 10},
     "zirh":   {"isim": "Zırh",        "emoji": "🔰",  "aciklama": "-%12 Alınan Hasar",  "fiyat": 700,  "max_seviye": 5},
     "mermi":  {"isim": "Geniş Şarjör","emoji": "📦",  "aciklama": "+%20 Cephane",       "fiyat": 650,  "max_seviye": 5},
+    "vampir": {"isim": "Vampir",      "emoji": "🧛",  "aciklama": "Her öld. +3 can",   "fiyat": 850,  "max_seviye": 5},
+    "combo":  {"isim": "Kombo Süre",  "emoji": "⚡",  "aciklama": "+0.5s Kombo süresi", "fiyat": 550,  "max_seviye": 5},
 }
 
 DURBUNLER = {
@@ -155,13 +180,49 @@ DURBUNLER = {
     "6x":      {"isim": "Sniper (6x)",  "zoom": 6.0, "fiyat": 400,  "emoji": "🎯"},
 }
 
-DURUM_MENU  = "menu"
-DURUM_OYUN  = "oyun"
-DURUM_PAUSE = "pause"
-DURUM_SHOP  = "shop"
-DURUM_BITTI = "bitti"
-DURUM_GUNLUK = "gunluk"
-DURUM_OZET = "ozet"
-PROJE_DIZIN   = os.path.dirname(os.path.abspath(__file__))
-KAYIT_DOSYASI = os.path.join(PROJE_DIZIN, "kayitlar", "highscore.json")
+# Zorluk çarpanları
+ZORLUK_AYARLARI: dict[str, dict[str, float]] = {
+    "kolay":  {"zombi_can_c": 0.7,  "oyuncu_hasar_c": 1.3,  "kristal_c": 0.7},
+    "normal": {"zombi_can_c": 1.0,  "oyuncu_hasar_c": 1.0,  "kristal_c": 1.0},
+    "zor":    {"zombi_can_c": 1.3,  "oyuncu_hasar_c": 0.8,  "kristal_c": 1.4},
+    "argus":  {"zombi_can_c": 2.0,  "oyuncu_hasar_c": 0.5,  "kristal_c": 2.0},
+}
+
+# Radyo mesajları (20 farklı)
+RADYO_MESAJLARI = [
+    "📻 Bölge 7 tahliyesi başarısız. Alternatif yol aramayın.",
+    "📻 ARGUS güvenlik protokolü devrede. Tüm bağlantılar kesildi.",
+    "📻 EDEN virüsü UV-C ışığına karşı zayıf olabilir.",
+    "📻 Hayatta kalanlar metro çıkışında toplanıyor. Son güncelleme: 02:15.",
+    "📻 Reaktör soğutması kritik seviyede. Bölge 3 tehlikeli.",
+    "📻 Dr. Kerem Aydın'ı görüyorsanız ARGUS'a bildirin — ödül verilecek.",
+    "📻 Zombi sürüleri sese tepki veriyor. Sessiz kalın.",
+    "📻 Antidot araştırması devam ediyor. Umut kaybetmeyin.",
+    "📻 ARGUS savunma hattı çöktü. Şehir merkezi tehlike altında.",
+    "📻 Direktör Selim Koç: 'Bu kaos gerekli bir adım.'",
+    "📻 Bölge 2 lazerle sterilize edildi. Bölge 1'e geçin.",
+    "📻 İstanbul'da hayatta kalan tahminî nüfus: 140.000.",
+    "📻 Sniper zombiler sesle hedefleme yapıyor. Köşeye çekilin.",
+    "📻 Patlayan zombilerden uzak durun — yarıçap 120 piksel.",
+    "📻 ARGUS sunucusuna erişim: Yalnızca biometrik.",
+    "📻 Kalkan zombilerin zayıf noktası: sol-sağ flanking.",
+    "📻 Elektrikli zombi öldürülünce 120px şok dalgası — dikkat!",
+    "📻 Kombo yapmak devam et — adrenalin dolunca 3x hasar!",
+    "📻 Mini boss görüldüğünde tüm ateş gücünü yönlendir.",
+    "📻 Bu mesaj Dr. Kerem Aydın'a: Sunucu koordinatı 41.01N.",
+]
+
+DURUM_MENU      = "menu"
+DURUM_OYUN      = "oyun"
+DURUM_PAUSE     = "pause"
+DURUM_SHOP      = "shop"
+DURUM_BITTI     = "bitti"
+DURUM_GUNLUK    = "gunluk"
+DURUM_OZET      = "ozet"
+DURUM_AYARLAR   = "ayarlar"
+DURUM_BASARIM   = "basarim"
+DURUM_YETENEK   = "yetenek"
+PROJE_DIZIN      = os.path.dirname(os.path.abspath(__file__))
+KAYIT_DOSYASI    = os.path.join(PROJE_DIZIN, "kayitlar", "highscore.json")
 os.makedirs(os.path.dirname(KAYIT_DOSYASI), exist_ok=True)
+

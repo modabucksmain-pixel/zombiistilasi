@@ -55,3 +55,19 @@ class Patlama:
                 if z.can <= 0:
                     oldukler.append(z)
         return oldukler
+
+    def zombi_hasari_ver_liste(self, hedefler, hasar):
+        """Düz liste (zombiler + bosslar) üzerinde AoE hasar. Yalnızca 1 kez çalışır."""
+        if self.hasar_verildi:
+            return []
+        self.hasar_verildi = True
+        oldukler = []
+        for z in hedefler:
+            dx = z.x - self.x
+            dy = z.y - self.y
+            if math.hypot(dx, dy) < self.max_r + z.yari_cap:
+                z.can -= hasar
+                z.hit_sayac = 0.2
+                if z.can <= 0:
+                    oldukler.append(z)
+        return oldukler

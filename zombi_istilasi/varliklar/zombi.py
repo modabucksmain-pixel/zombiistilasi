@@ -47,6 +47,19 @@ class Zombi(pygame.sprite.Sprite):
         self.sniper_sayac = 1.2
         self.son_vurus_headshot = False
 
+        # Idle/Aggro algılama sistemi
+        _fark_tablosu = {
+            "normal": 400, "hizli": 500, "kosucu": 600,
+            "patlayan": 350, "zehirli": 400, "zirhli": 350,
+            "kopek": 550, "sniper_zombi": 700, "elektrik": 400,
+            "vampir": 450, "donusturucu": 400, "kalkan": 350,
+            "mini_boss": 500,
+        }
+        self.fark_mesafe = float(_fark_tablosu.get(tip, 400))
+        self.agresif = False      # Oyuncuyu fark etti mi?
+        self.idle_yuruyus = 0.0   # Idle'da küçük yürüyüş sayacı
+        self.idle_aci = random.uniform(0, math.tau)  # Idle yönü
+
         self._image_olustur()
         self.rect = self.image.get_rect(center=(int(self.x), int(self.y)))
 
@@ -129,6 +142,44 @@ class Zombi(pygame.sprite.Sprite):
         dx = ox - self.x
         dy = oy - self.y
         uzak = math.hypot(dx, dy) or 1.0
+
+        # ── Idle / Aggro algılama ────────────────────────────
+        # Hasar aldıysa hemen agresif ol
+        if self.can < self.max_can:
+            self.agresif = True
+        # Oyuncu fark mesafesi içindeyse agresif ol
+        elif uzak <= self.fark_mesafe:
+            self.agresif = True
+        # Oyuncu çok uzaklaştıysa (fark × 1.5) tekrar idle
+        elif uzak > self.fark_mesafe * 1.5:
+            self.agresif = False
+
+        # ── IDLE: Oyuncuyu fark etmedi ───────────────────────
+        if not self.agresif:
+            self.idle_yuruyus -= dt
+            if self.idle_yuruyus <= 0:
+                self.idle_yuruyus = random.uniform(2.0, 5.0)
+                self.idle_aci = random.uniform(0, math.tau)
+            # Çok yavaş rastgele yürüyüş
+            idle_hiz = self.baz_hiz * 0.15
+            nx = math.cos(self.idle_aci)
+            ny = math.sin(self.idle_aci)
+            yeni_x = self.x + nx * idle_hiz * dt
+            yeni_y = self.y + ny * idle_hiz * dt
+            if hareket_cozucu:
+                yeni_x, yeni_y = hareket_cozucu(self.x, self.y, yeni_x, yeni_y, self.yari_cap)
+            self.x, self.y = yeni_x, yeni_y
+            self.vx, self.vy = 0.0, 0.0
+            self.rect.center = (int(self.x), int(self.y))
+            # Görsel (idle durumda)
+            if self.hit_sayac > 0:
+                self.hit_sayac -= dt
+                self.image = self._hit_image
+            else:
+                self.image = self._base_image
+            return
+
+        # ── AGGRO: Oyuncuyu kovalıyor ────────────────────────
         nx, ny = dx / uzak, dy / uzak
 
         if self.can <= self.max_can * 0.2:
