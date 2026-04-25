@@ -5,6 +5,7 @@ import wave
 import io
 import struct
 import random
+from sistemler.debug_log import debug, error
 
 # VERSION: 3.0 (Ultimate Realism Sound Engine)
 print("Ses Sistemi v3.0 Yükleniyor... (Gerçekçi Silah Sesleri Aktif)")
@@ -19,7 +20,7 @@ class SesSistemi:
             self.sesler = {}
             self._yukle()
         except Exception as e:
-            print(f"Ses sistemi hatası: {e}")
+            error(f"sistemler.ses_sistemi.SesSistemi.__init__ mixer init/yukle hatasi: {e}")
 
     def _prosedurel_wav_uret(self, tip="ates"):
         sample_rate = 44100
@@ -82,8 +83,13 @@ class SesSistemi:
         for t in tipler:
             yol = os.path.join(self.dizin, f"{t}.wav")
             if os.path.exists(yol):
-                try: self.sesler[t] = pygame.mixer.Sound(yol)
-                except: pass
+                try:
+                    self.sesler[t] = pygame.mixer.Sound(yol)
+                except Exception as e:
+                    debug(
+                        "sistemler.ses_sistemi.SesSistemi._yukle",
+                        f"ses dosyasi yuklenemedi tip={t} yol={yol} hata={e}",
+                    )
             
             # Dosya yoksa üret
             if t not in self.sesler:

@@ -8,6 +8,7 @@ import json
 import os
 import pygame
 from ayarlar import GENISLIK, YUKSEKLIK, BEYAZ, SIYAH, KIRMIZI, YESIL, ALTIN, CAMGOBEGI, MOR, PROJE_DIZIN
+from sistemler.debug_log import debug
 
 
 AYARLAR_DOSYASI = os.path.join(PROJE_DIZIN, "kayitlar", "ayarlar.json")
@@ -31,8 +32,11 @@ def ayarlari_yukle() -> dict:
                 veri = VARSAYILAN_AYARLAR.copy()
                 veri.update(kayit)
                 return veri
-    except Exception:
-        pass
+    except Exception as e:
+        debug(
+            "ekranlar.ayarlar_menusu.ayarlari_yukle",
+            f"ayar dosyasi okunamadi yol={AYARLAR_DOSYASI} hata={e}",
+        )
     return VARSAYILAN_AYARLAR.copy()
 
 
@@ -41,8 +45,11 @@ def ayarlari_kaydet(ayarlar: dict) -> None:
         os.makedirs(os.path.dirname(AYARLAR_DOSYASI), exist_ok=True)
         with open(AYARLAR_DOSYASI, "w", encoding="utf-8") as f:
             json.dump(ayarlar, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
+    except Exception as e:
+        debug(
+            "ekranlar.ayarlar_menusu.ayarlari_kaydet",
+            f"ayar dosyasi yazilamadi yol={AYARLAR_DOSYASI} input={ayarlar} hata={e}",
+        )
 
 
 class AyarlarMenusu:

@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 import pygame
 from ayarlar import PROJE_DIZIN, ALTIN, BEYAZ, CAMGOBEGI, MOR
+from sistemler.debug_log import debug
 
 
 KAYIT_DOSYASI = os.path.join(PROJE_DIZIN, "kayitlar", "basarimlar.json")
@@ -106,8 +107,11 @@ class BasarimSistemi:
                     veri = json.load(f)
                     self.tamamlanan_ids = set(veri.get("tamamlanan", []))
                     self._istatistikler.update(veri.get("istatistikler", {}))
-        except Exception:
-            pass
+        except Exception as e:
+            debug(
+                "sistemler.basarim.BasarimSistemi._yukle",
+                f"kayit okunamadi yol={KAYIT_DOSYASI} hata={e}",
+            )
 
     def _kaydet(self) -> None:
         try:
@@ -117,8 +121,11 @@ class BasarimSistemi:
                     "tamamlanan": list(self.tamamlanan_ids),
                     "istatistikler": self._istatistikler,
                 }, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        except Exception as e:
+            debug(
+                "sistemler.basarim.BasarimSistemi._kaydet",
+                f"kayit yazilamadi yol={KAYIT_DOSYASI} hata={e}",
+            )
 
     def istatistik_guncelle(self, anahtar: str, miktar: int = 1) -> None:
         if anahtar in self._istatistikler:
