@@ -70,6 +70,11 @@ def main():
     oyun_bitti  = OyunBitti()
     shop        = Shop()
 
+    from ekranlar.meta_ekran import MetaEkran
+    from ayarlar import DURUM_MENU
+    DURUM_META = "meta"
+    meta_ekran = MetaEkran()
+
     durum = DURUM_MENU
     _fare_durumu_ayarla(aktif_oyun=False)
 
@@ -164,6 +169,7 @@ def main():
                 oyun_bitti.ayarla(oyun_ekrani.son_puan, oyun_ekrani.dalga_no, oyun_ekrani.yuksek_skorlar)
                 durum = DURUM_BITTI
             elif oyun_ekrani.dalga_bitti_mi:
+                oyun_ekrani.dalga_bitti_isle()  # Görev ödülleri + kristal
                 durum = DURUM_SHOP
                 _fare_durumu_ayarla(aktif_oyun=False)
 
